@@ -13,7 +13,6 @@ module CarrierWave
 
       def write_options(new_file)
         { acl:          uploader.aws_acl,
-          body:         new_file.to_file,
           content_type: new_file.content_type,
         }.merge(aws_attributes).merge(aws_write_options)
       end

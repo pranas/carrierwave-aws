@@ -38,12 +38,12 @@ module CarrierWave
         file.get(aws_options.read_options).body.read
       end
 
-      def store(new_file)
-        !!file.put(aws_options.write_options(new_file))
+      def store(sanitized_file)
+        file.upload_file(sanitized_file.file, aws_options.write_options(sanitized_file))
       end
 
       def copy_to(new_path)
-        bucket.object(new_path).copy_from(copy_source: "#{bucket.name}/#{file.key}")
+        file.copy_to(bucket.object(new_path), aws_options.write_options(self))
       end
 
       def signed_url(options = {})

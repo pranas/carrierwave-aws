@@ -11,10 +11,18 @@ module CarrierWave
         @connection_cache = {}
       end
 
-      def store!(file)
-        AWSFile.new(uploader, connection, uploader.store_path).tap do |aws_file|
-          aws_file.store(file)
+      def store!(sanitized_file)
+        AWSFile.new(uploader, connection, uploader.store_path).tap do |new_aws_file|
+          if sanitized_file.file.is_a?(AWSFile)
+            aws_file = sanitized_file.file
+            aws_file.copy_to(new_aws_file.path)
+            aws_file.delete
+          else
+            new_aws_file.store(sanitized_file)
+          end
         end
+      rescue ::Aws::S3::Errors::NotFound => e
+        raise CarrierWave::DownloadError, I18n.translate(:"errors.messages.carrierwave_download_error", e: e)
       end
 
       def retrieve!(identifier)
